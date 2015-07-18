@@ -4,89 +4,93 @@ $(function() {
       this.data = {
         cats: [
           {
-            name: "cat_picture1.jpg",
-            count: 0
-          }, {
-            name: "cat_picture2.jpeg",
-            count: 0
-          }, {
-            name: "cat_picture3.jpeg",
-            count: 0
-          }, {
-            name: "cat_picture4.jpeg",
-            count: 0
-          }, {
-            name: "cat_picture5.jpeg",
-            count: 0
+            name: "cat1",
+            imgSrc: "cat_picture1.jpg",
+            clickCount: 0
+          },
+          {
+            name: "cat2",
+            imgSrc: "cat_picture2.jpeg",
+            clickCount: 0
+          },
+          {
+            name: "cat3",
+            imgSrc: "cat_picture3.jpeg",
+            clickCount: 0
+          },
+          {
+            name: "cat4",
+            imgSrc: "cat_picture4.jpeg",
+            clickCount: 0
+          },
+          {
+            name: "cat5",
+            imgSrc: "cat_picture5.jpeg",
+            clickCount: 0
           }
         ],
-        currentCat: 0
+        currentCat: null
       };
     },
     getAllCats: function() {
       return this.data.cats;
     },
-    setCurrentCat: function(index) {
-      this.data.currentCat = index;
+    setCurrentCat: function(cat) {
+      this.data.currentCat = cat;
     },
     getCurrentCat: function() {
-      return this.data.cats[this.data.currentCat];
+      return this.data.currentCat;
     }
   };
 
 
   var octopus = {
     incrementCount: function() {
-      model.getCurrentCat().count += 1;
+      model.getCurrentCat().clickCount += 1;
+      catView.render();
     },
-    getCatName: function() {
-      return model.getCurrentCat().name;
+
+    getCat: function() {
+      return model.getCurrentCat();
     },
-    getCatCount: function() {
-      return model.getCurrentCat().count;
+
+    setCat: function(cat) {
+      model.setCurrentCat(cat);
     },
+
     getCats: function() {
       return model.getAllCats();
     },
-    getCatsNumber: function() {
-      return model.getAllCats().length;
-    },
-    setCat: function(index) {
-      model.setCurrentCat(index);
-    },
+
+
     init: function() {
       model.init();
-      listView.init();
+      model.setCurrentCat(model.data.cats[0]);
+      catListView.init();
       catView.init();
-    },
-    refreshCat: function() {
-      catView.render();
     }
   };
 
 
-  var listView = {
+  var catListView = {
     init: function() {
-      this.catlist = $('#catlist');
-      listView.render();
+      this.catListElem = document.getElementById('catlist');
+      this.render();
     },
     render: function() {
-      var htmlStr = '';
       var cats = octopus.getCats();
-      for (var i=0; i < cats.length; i++) {
-        var name = cats[i].name.split('.')[0]
-        htmlStr += '<button id="button' + i +'">' + name + '</button>';
-      }
-      this.catlist.html(htmlStr);
-      for (var i=0; i < octopus.getCatsNumber(); i++) {
-        var button = "#button" + i;
-        $(button).click((function(index) {
+      this.catListElem.innerHTML = '';
+      for (var i = 0; i < cats.length; i++) {
+        var cat = cats[i];
+        var elem = document.createElement('li');
+        elem.textContent = cat.name;
+        elem.addEventListener('click', (function(catCopy) {
           return function() {
-            console.log("clicked button " + index);
-            octopus.setCat(index);
-            octopus.refreshCat();
-          }
-        })(i));
+            octopus.setCat(catCopy);
+            catView.render();
+          };
+        })(cat));
+      this.catListElem.appendChild(elem);
       }
     }
   };
@@ -94,20 +98,24 @@ $(function() {
 
   var catView = {
     init: function() {
-      this.cat = $('.cat');
-      this.cat.click(function() {
+      this.catElem = document.getElementById('cat');
+      this.catNameElem = document.getElementById('cat-name');
+      this.catImageElem = document.getElementById('cat-img');
+      this.countElem = document.getElementById('cat-count');
+
+      this.catImageElem.addEventListener('click', function() {
         octopus.incrementCount();
-        catView.render();
-      })
-      catView.render();
+      });
+
+      this.render();
     },
+
     render: function() {
-      var htmlStr = '';
-      htmlStr += '<span class="counter">' + octopus.getCatCount() + '</span> clicks' +
-        '<br>' +
-        '<img class="clicker" src="' + octopus.getCatName() + '">'
-        ;
-      this.cat.html(htmlStr);
+      var currentCat = octopus.getCat();
+
+      this.countElem.textContent = currentCat.clickCount + " clicks";
+      this.catNameElem.textContent = currentCat.name;
+      this.catImageElem.src = currentCat.imgSrc;
     }
   };
 
